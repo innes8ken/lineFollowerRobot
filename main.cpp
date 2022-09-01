@@ -39,6 +39,7 @@ int main(int, char **) {
   initialize_samanet(nPredictors);
   serialib LS; // for Arduino
   char Ret = LS.Open(DEVICE_PORT, 115200); // for arduino
+  
   if (Ret != 1) { // If an error occurred...
     printf("Error while opening port. Permission problem?\n");
     return Ret; // ... quit the application
@@ -47,6 +48,7 @@ int main(int, char **) {
   Ret = LS.Write(&startChar, sizeof(startChar)); //start the communication
   printf("Serial port opened successfully !\n");
   VideoCapture cap(0); //0 for Rpi camera
+  
   if (!cap.isOpened()) {
     printf("The selected video capture device is not available.\n");
     return -1;
@@ -55,6 +57,7 @@ int main(int, char **) {
     predictorDeltaMeans.reserve(nPredictors);
     std::vector<uint8_t> sensorsArray;
     sensorsArray.reserve(numSens9);
+  
   for (;;) {
     //getting the predictor signals from the camera
     statFrame = cv::Scalar(100, 100, 100);
@@ -67,6 +70,7 @@ int main(int, char **) {
     sensorsArray.clear();
     uint8_t readToThis[numSens9] = {0,0,0,0,0,0,0,0,0};
     Ret = LS.Read(&readToThis, sizeof(readToThis));
+    
     for (int i = 0 ; i < numSens9; i++){
       sensorsArray.push_back(readToThis[i]);
       //cout << "return: " << (int16_t)readToThis[i] << endl;
@@ -83,6 +87,7 @@ int main(int, char **) {
     cout << "....................." << endl;*/
 
     double sensorError = external->calcError(statFrame, sensorsArray);
+    
     if (Ret > 0){
       int speedError = external->onStepCompleted(statFrame, sensorError, predictorDeltaMeans);
       int16_t mainDifferentialVelocity = (int16_t)speedError;
@@ -95,6 +100,7 @@ int main(int, char **) {
     // Show everything on the screen
     cvui::update();
     cv::imshow(STAT_WINDOW, statFrame);
+    
     if (waitKey(20) == ESC_key)
       break;
   }
